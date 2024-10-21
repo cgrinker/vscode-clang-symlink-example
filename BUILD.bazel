@@ -1,0 +1,40 @@
+load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
+
+refresh_compile_commands(
+    name = "refresh_compile_commands",
+
+    targets = {
+        ":example": "",
+    },
+)
+
+
+cc_library(
+    name = "example-lib",
+	visibility = ["//visibility:public"],
+
+    hdrs = glob(["src/lib/**/*.h*"]),
+    srcs = glob(["src/lib/**/*.c*"]),
+    includes = ["src/lib"],
+    strip_include_prefix = "src",
+
+    copts = select({
+        "@bazel_tools//src/conditions:windows": ["/std:c++latest"],
+        "//conditions:default": ["-std=c++23"],
+    }),
+)
+
+cc_binary(
+    name = "example",
+    visibility = ["//visibility:public"],
+    
+    srcs = glob(["src/cli/**/*.c*", "src/cli/**/*.h*"]),
+    deps = [
+        ":example-lib",
+    ],
+
+    copts = select({
+        "@bazel_tools//src/conditions:windows": ["/std:c++latest"],
+        "//conditions:default": ["-std=c++23"],
+    }),
+)
